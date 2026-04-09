@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>User Manager</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: "Poppins", sans-serif;
+  background: white;
+}
+
+.container {
+  max-width: 700px;
+  margin: 50px auto;
+  background: white;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+h1 {
+  text-align: center;
+  color: #333;
+}
+
+input {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+button:hover {
+  background: #5a67d8;
+}
+
+.user {
+  background: #f4f4f4;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.delete {
+  background: red;
+  border: none;
+  color: white;
+  padding: 5px 10px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h1>👥 User Manager</h1>
+
+  <form id="form">
+    <input id="nom" placeholder="Nom" required>
+    <input id="prenom" placeholder="Prénom" required>
+    <input id="age" type="number" placeholder="Age">
+    <button>Ajouter</button>
+  </form>
+
+  <button onclick="loadUsers()">📥 Charger Users</button>
+
+  <div id="list"></div>
+</div>
+
+<script>
+async function loadUsers() {
+  const res = await fetch('/api/users');
+  const users = await res.json();
+
+  const list = document.getElementById('list');
+  list.innerHTML = '';
+
+  users.forEach(u => {
+    const div = document.createElement('div');
+    div.className = 'user';
+
+    div.innerHTML = `
+      <span>${u.prenom} ${u.nom} (${u.age})</span>
+      <button class="delete" onclick="deleteUser(${u.id})">X</button>
+    `;
+
+    list.appendChild(div);
+  });
+}
+
+document.getElementById('form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const nom = document.getElementById('nom').value;
+  const prenom = document.getElementById('prenom').value;
+  const age = document.getElementById('age').value;
+
+  await fetch('/api/users', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ nom, prenom, age })
+  });
+
+  loadUsers();
+});
+
+async function deleteUser(id) {
+  await fetch(`/api/users/${id}`, { method: 'DELETE' });
+  loadUsers();
+}
+</script>
+
+</body>
+</html>
